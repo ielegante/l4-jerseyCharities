@@ -14,7 +14,7 @@ Playing with the tests (in `tests`) is a great way to get started tinkering with
 
 To begin seeing how the legislation maps onto the codification, start with the rationalisation doc in `thinking/charities_rationalisation.md`. This is a work in progress, and will be updated as the codification progresses.
 
-You can copy the prelude, note and tests together into the same sheet in our [online-editor](https://jl4.legalese.com) to run it
+You can copy the l4 files, and tests together into the same sheet in our [online-editor](https://jl4.legalese.com) to run it
 or clone, build and run the [L4 IDE](https://github.com/smucclaw/l4-ide) and run this L4 code inside [VSCode](https://code.visualstudio.com).
 
 
