@@ -2,7 +2,7 @@
 -- Tests for jerseyCharities2.l4 with comprehensive #EVAL statements
 
 IMPORT prelude
-IMPORT `jerseyCharities2`
+IMPORT `../jerseyCharities2`
 
 -- ======================================================================
 -- SAMPLE DATA FOR TESTING

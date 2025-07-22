@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(jl4-cli:*)",
+      "Bash(grep:*)"
+    ],
+    "deny": []
+  }
+}

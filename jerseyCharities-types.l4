@@ -20,6 +20,7 @@ DECLARE CharityRegister
         lastUpdated IS A Date
 
 -- A register entry, containing all data recorded in the register
+-- Enhanced to meet all Article 8(3)(a-n) requirements
 DECLARE RegisterEntry
     HAS registrationNumber IS A STRING
         name IS A STRING
@@ -38,8 +39,65 @@ DECLARE RegisterEntry
         fundingCondition IS A BOOLEAN
         retrospectiveDeregistration IS A BOOLEAN
         deregistrationReason IS A MAYBE STRING
+        -- Additional fields per Article 8(3) requirements
+        charityType IS A CharityType -- (c) type of charity
+        principalAddress IS A Address -- (d) principal address details
+        contactInformation IS A ContactInfo -- (f) contact details
+        websiteUrl IS A MAYBE STRING -- (g) website if any
+        emailAddress IS A MAYBE STRING -- (h) email if any
+        telephoneNumber IS A MAYBE STRING -- (i) telephone if any
+        annualReturnDueDate IS A MAYBE Date -- (j) when next return due
+        requiredStepsNotices IS A LIST OF RequiredStepsNotice -- (k) notices issued
+        publicBenefitDetails IS A MAYBE STRING -- (l) detailed public benefit info
+        governorPaymentSummary IS A MAYBE GovernorPaymentSummary -- (m) payment summary
+        additionalInformation IS A MAYBE STRING -- (n) other prescribed info
 
-ASSUME lastFinancialRecord IS A FUNCTION FROM RegisterEntry TO FinancialYearRecord
+-- Supporting types for Article 8(3) compliance
+DECLARE CharityType IS ONE OF
+    UnincorporatedAssociation
+    Trust
+    Company
+    CommunityInterestCompany
+    Other HAS description IS A STRING
+
+DECLARE Address
+    HAS buildingNumber IS A MAYBE STRING
+        streetName IS A STRING
+        parish IS A STRING
+        postcode IS A MAYBE STRING
+        country IS A STRING
+
+DECLARE ContactInfo
+    HAS primaryContact IS A Person
+        alternativeContact IS A MAYBE Person
+        preferredMethod IS A ContactMethod
+
+DECLARE ContactMethod IS ONE OF
+    Email
+    Telephone
+    Post
+    InPerson
+
+DECLARE GovernorPaymentSummary
+    HAS totalPayments IS A Money
+        numberOfGovernorsPaid IS A NUMBER
+        highestIndividualPayment IS A Money
+        paymentPurpose IS A STRING
+
+-- Implementation of lastFinancialRecord function (critical for temporal calculations)
+GIVEN charity IS A RegisterEntry
+GIVETH A FinancialYearRecord
+lastFinancialRecord MEANS
+  CONSIDER charity's financials
+  WHEN EMPTY THEN FinancialYearRecord (DateRange commencement commencement) 
+                                      (Money 0 "GBP") 
+                                      (Money 0 "GBP") 
+                                      (Money 0 "GBP") 
+                                      (Money 0 "GBP") 
+                                      "" 
+                                      FALSE 
+                                      commencement
+  WHEN record FOLLOWED BY rest THEN record
 
 -- Record of a financial year's data
 DECLARE FinancialYearRecord
@@ -272,6 +330,13 @@ DECLARE EnhancedPerson
         partnerships IS A LIST OF STRING
         corporateConnections IS A LIST OF STRING
 
+-- MisconductType enumeration per Article 2(10) Charities (Jersey) Law 2014
+-- "misconduct (includes mismanagement or misapplication of charity property)"
+DECLARE MisconductType IS ONE OF
+    Mismanagement HAS description IS A STRING
+    Misapplication HAS description IS A STRING
+    GeneralMisconduct HAS description IS A STRING
+
 -- Enhanced RegisterEntry with additional fields for timing flexibility and payment tracking
 DECLARE EnhancedRegisterEntry
     HAS registrationNumber IS A STRING
@@ -291,3 +356,80 @@ DECLARE EnhancedRegisterEntry
         fundingCondition IS A BOOLEAN
         retrospectiveDeregistration IS A BOOLEAN
         deregistrationReason IS A MAYBE STRING
+        misconductRecords IS A LIST OF MisconductRecord
+
+-- Misconduct record tracking per Article 2(10)
+DECLARE MisconductRecord
+    HAS misconductType IS A MisconductType
+        findingDate IS A Date
+        governorId IS A STRING
+        details IS A STRING
+        resolved IS A BOOLEAN
+
+-- R&O 60/2018 Restricted Section Definitions
+-- Article 1 definitions for restricted section funding conditions
+
+-- Donation definition per R&O 60/2018 Article 1
+DECLARE Donation
+    HAS donationType IS A DonationType
+        amount IS A Money
+        donor IS A MAYBE STRING
+        isPublicSolicitation IS A BOOLEAN
+        date IS A Date
+
+DECLARE DonationType IS ONE OF
+    MonetaryDonation
+    PropertyDonation HAS propertyDescription IS A STRING
+    ServiceDonation HAS serviceDescription IS A STRING
+    Other HAS description IS A STRING
+
+-- Relevant Professional definition per R&O 60/2018 Article 1
+DECLARE RelevantProfessional IS ONE OF
+    Lawyer HAS practiceArea IS A STRING
+    Accountant HAS qualifications IS A STRING
+    FinancialAdvisor HAS licenseDetails IS A STRING
+    Other HAS professionalType IS A STRING
+              credentials IS A STRING
+
+-- Soliciting activity definition per R&O 60/2018 Article 1
+DECLARE SolicitingActivity
+    HAS activityType IS A SolicitationType
+        targetAudience IS A STRING
+        method IS A STRING
+        date IS A Date
+        isPublic IS A BOOLEAN
+
+DECLARE SolicitationType IS ONE OF
+    DirectSolicitation
+    PublicCampaign
+    OnlineFundraising
+    EventFundraising
+    Other HAS description IS A STRING
+
+-- ReportableMatters enumeration per Article 19(1)(a-h) Charities (Jersey) Law 2014
+DECLARE ReportableMatters IS ONE OF
+    -- (a) conviction for offence against vulnerable person
+    VulnerablePersonConviction HAS conviction IS A Conviction
+    -- (b) any unspent conviction
+    UnspentConviction HAS conviction IS A Conviction
+    -- (c) bankruptcy or individual voluntary arrangement
+    BankruptcyOrIVA HAS description IS A STRING
+    -- (d) disqualification as company director
+    DirectorDisqualification HAS description IS A STRING
+    -- (e) removal as trustee of charity
+    TrusteeRemoval HAS description IS A STRING
+    -- (f) any other matter affecting fitness
+    FitnessImpairment HAS description IS A STRING
+    -- (g) serious incident affecting charity
+    SeriousIncident HAS description IS A STRING
+    -- (h) any other matter prescribed by Minister
+    MinisterPrescribed HAS description IS A STRING
+
+-- ReportableMatters record for tracking governor reporting obligations
+DECLARE ReportableMattersRecord
+    HAS matter IS A ReportableMatters
+        governorId IS A STRING
+        reportDate IS A MAYBE Date
+        reportedToCommissioner IS A BOOLEAN
+        reportedToCharity IS A BOOLEAN
+        description IS A STRING
