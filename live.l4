@@ -1,0 +1,37 @@
+
+// livecoding session putting things in approximately propositional style.
+
+
+@ref url https://www.jerseylaw.je/laws/current/l_41_2014
+// (2) The Commissioner may do anything
+//        (other than acting as a governor of a charity
+//                                      or of an entity with charitable purposes)
+//     that    is calculated to facilitate,
+//          or is conducive or incidental to,
+//          the performance of any of his or her functions.
+
+§ `4 General functions of Commissioner`
+§§ `4.2`
+
+DECLARE Actors IS ONE OF Commissioner
+DECLARE Action
+   HAS `calculated to facilitate`                                    IS A BOOLEAN
+       `conducive`                                                   ^  ^ ^
+       `incidental`                                                  ^  ^ ^
+       `to the performance of any of his or her functions`           ^  ^ ^
+       `acting as a governor of a charity`                           ^  ^ ^
+       `acting as a governor of an entity with charitable purposes`  ^  ^ ^
+
+rule2 MEANS
+ PARTY Commissioner
+  MUST action
+   PROVIDED `is allowed` action
+   
+GIVEN action IS AN Action
+`is allowed` action MEANS
+                     action's `calculated to facilitate`
+            OR       ^     ^     `conducive`
+                  OR ^     ^     `incidental`
+                AND  ^     ^  `to the performance of any of his or her functions`
+       AND NOT      action's `acting as a governor of a charity`
+               OR   action's `acting as a governor of an entity with charitable purposes`
